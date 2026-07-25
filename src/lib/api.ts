@@ -3,7 +3,8 @@ import { Prompt } from "./types";
 const MOMEN_API_URL = process.env.NEXT_PUBLIC_MOMEN_API_URL || "";
 const MOMEN_ADMIN_TOKEN = process.env.NEXT_PUBLIC_MOMEN_ADMIN_TOKEN || "";
 const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
+// Pollinations.ai - Free, no API key needed
+const POLLINATIONS_URL = "https://image.pollinations.ai/prompt";
 
 async function momenGraphQL(query: string, variables: Record<string, unknown> = {}) {
   const response = await fetch(MOMEN_API_URL, {
@@ -157,87 +158,28 @@ export async function deletePrompt(id: string): Promise<void> {
   );
 }
 
-// Gemini Image Generation
+// Image Generation - Using Pollinations.ai (Free, no API key)
 
-const BRAND_IDENTITY = `You are the dedicated visual identity designer for a Facebook educational brand called CodeBooks Hub.
-Your task is to generate square social media educational post designs in Arabic for Facebook, optimized for high readability, strong engagement, and brand consistency.
-
-Always preserve these brand rules:
-- Dark background, preferably matte black or very deep charcoal
-- Main accent color: rich golden yellow (#D4A843)
-- Secondary accent color: deep blue for icons or labels
-- Arabic text must be large, bold, clean, and easy to read
-- Premium Arabic educational infographic style
-- Modern, structured, professional design
-- 1:1 square format for Facebook posts
-- Visual hierarchy: title first, scenario second, questions third, CTA last`;
+const BRAND_IDENTITY = `CodeBooks Hub educational post style: dark matte black background, rich golden yellow (#D4A843) accents, white Arabic bold text, premium infographic design, 1:1 square format, modern professional layout, high mobile readability`;
 
 export async function generateImage(
   prompt: string,
   onProgress?: (status: string) => void
 ): Promise<string> {
-  if (!GEMINI_API_KEY) {
-    throw new Error("Gemini API Key not configured. Please add NEXT_PUBLIC_GEMINI_API_KEY to your environment variables.");
-  }
-
   onProgress?.("جاري تجهيز البرومبت...");
 
-  const fullPrompt = `${BRAND_IDENTITY}
+  const fullPrompt = `${BRAND_IDENTITY}. ${prompt}. Arabic educational infographic, clean layout, dark background with golden accents, professional design`;
 
-Generate a square Arabic educational Facebook post for CodeBooks Hub based on this content:
+  onProgress?.("جاري توليد الصورة (مجاني)...");
 
-${prompt}
+  // Pollinations.ai - free image generation
+  const encodedPrompt = encodeURIComponent(fullPrompt);
+  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
 
-Important:
-- The image must be 1:1 square format
-- All Arabic text must be large, bold, and readable
-- Use dark background with golden yellow accents
-- Professional infographic style, not photographic
-- Clean layout with clear sections`;
+  onProgress?.("جاري تحميل الصورة...");
 
-  onProgress?.("جاري إرسال الطلب إلى Gemini...");
-
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: fullPrompt,
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"],
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    console.error("Gemini API Error:", error);
-    throw new Error(error.error?.message || "Failed to generate image");
-  }
-
-  onProgress?.("جاري استلام الصورة...");
-
-  const data = await response.json();
-  const parts = data.candidates?.[0]?.content?.parts || [];
-
-  for (const part of parts) {
-    if (part.inlineData) {
-      const mimeType = part.inlineData.mimeType || "image/png";
-      const base64 = part.inlineData.data;
-      return `data:${mimeType};base64,${base64}`;
-    }
-  }
-
-  throw new Error("No image was generated in the response");
+  // Return the URL directly - Pollinations generates on-the-fly
+  return imageUrl;
 }
 
 export async function generateImageVariations(
@@ -250,8 +192,10 @@ export async function generateImageVariations(
   for (let i = 0; i < count; i++) {
     onProgress?.(`جاري توليد الصورة ${i + 1} من ${count}...`);
     try {
-      const image = await generateImage(prompt);
-      results.push(image);
+      // Use different seed for each variation
+      const encodedPrompt = encodeURIComponent(`${BRAND_IDENTITY}. ${prompt}. Arabic educational infographic`);
+      const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now() + i * 1000}&nologo=true`;
+      results.push(imageUrl);
     } catch (error) {
       console.error(`Error generating variation ${i + 1}:`, error);
     }
@@ -265,56 +209,13 @@ export async function refineImage(
   refinementPrompt: string,
   onProgress?: (status: string) => void
 ): Promise<string> {
-  if (!GEMINI_API_KEY) {
-    throw new Error("Gemini API Key not configured.");
-  }
-
   onProgress?.("جاري تطبيق التعديلات...");
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: `Keep the exact same layout and brand identity, but ${refinementPrompt}. The design must maintain the CodeBooks Hub visual system with dark background, golden yellow accents, and premium Arabic educational infographic style.`,
-            },
-            {
-              inlineData: {
-                mimeType: "image/png",
-                data: originalImage.split(",")[1],
-              },
-            },
-          ],
-        },
-      ],
-      generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"],
-      },
-    }),
-  });
+  // For Pollinations, we generate a new image with refined prompt
+  const refinedFullPrompt = `${BRAND_IDENTITY}. ${refinementPrompt}. Keep same dark background and golden accents style`;
+  const encodedPrompt = encodeURIComponent(refinedFullPrompt);
+  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || "Failed to refine image");
-  }
-
-  onProgress?.("جاري استلام الصورة المعدلة...");
-
-  const data = await response.json();
-  const parts = data.candidates?.[0]?.content?.parts || [];
-
-  for (const part of parts) {
-    if (part.inlineData) {
-      const mimeType = part.inlineData.mimeType || "image/png";
-      const base64 = part.inlineData.data;
-      return `data:${mimeType};base64,${base64}`;
-    }
-  }
-
-  throw new Error("No image was returned in the response");
+  onProgress?.("جاري تحميل الصورة المعدلة...");
+  return imageUrl;
 }
