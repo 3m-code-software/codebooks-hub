@@ -3,7 +3,7 @@ import { Prompt } from "./types";
 const MOMEN_API_URL = process.env.NEXT_PUBLIC_MOMEN_API_URL || "";
 const MOMEN_ADMIN_TOKEN = process.env.NEXT_PUBLIC_MOMEN_ADMIN_TOKEN || "";
 const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
 
 async function momenGraphQL(query: string, variables: Record<string, unknown> = {}) {
   const response = await fetch(MOMEN_API_URL, {
