@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-brand-black: #1a1a1a;
+  --color-brand-charcoal: #2a2a2a;
+  --color-brand-gold: #D4A843;
+  --color-brand-gold-light: #E8C86A;
+  --color-brand-gold-dark: #B8922F;
+  --color-brand-white: #ffffff;
+  --color-brand-teal: #1a6b6b;
+  --color-brand-blue: #1e3a5f;
+  --color-brand-gray: #3a3a3a;
+  --color-brand-gray-light: #4a4a4a;
+  --color-brand-bg: #121212;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-brand-bg);
+  color: var(--color-brand-white);
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-brand-charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand-gold);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brand-gold-light);
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(42, 42, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 168, 67, 0.1);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-brand-gold), var(--color-brand-gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(212, 168, 67, 0.1);
+}
+
+.card-hover:hover {
+  border-color: rgba(212, 168, 67, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(212, 168, 67, 0.1);
+}
+
+/* Glow effect */
+.glow {
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.15);
+}
+
+/* Pulse animation for active states */
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(212, 168, 67, 0);
+  }
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2s infinite;
+}
