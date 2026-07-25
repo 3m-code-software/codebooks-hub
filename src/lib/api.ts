@@ -173,8 +173,10 @@ export async function generateImage(
   onProgress?.("جاري توليد الصورة (مجاني)...");
 
   // Pollinations.ai - free image generation
+  // Use random seed within valid range (max 2147483647)
+  const randomSeed = Math.floor(Math.random() * 2000000000);
   const encodedPrompt = encodeURIComponent(fullPrompt);
-  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
+  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
 
   onProgress?.("جاري تحميل الصورة...");
 
@@ -192,9 +194,10 @@ export async function generateImageVariations(
   for (let i = 0; i < count; i++) {
     onProgress?.(`جاري توليد الصورة ${i + 1} من ${count}...`);
     try {
-      // Use different seed for each variation
+      // Use different seed for each variation (within valid range)
+      const randomSeed = Math.floor(Math.random() * 2000000000) + i;
       const encodedPrompt = encodeURIComponent(`${BRAND_IDENTITY}. ${prompt}. Arabic educational infographic`);
-      const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now() + i * 1000}&nologo=true`;
+      const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
       results.push(imageUrl);
     } catch (error) {
       console.error(`Error generating variation ${i + 1}:`, error);
@@ -214,7 +217,8 @@ export async function refineImage(
   // For Pollinations, we generate a new image with refined prompt
   const refinedFullPrompt = `${BRAND_IDENTITY}. ${refinementPrompt}. Keep same dark background and golden accents style`;
   const encodedPrompt = encodeURIComponent(refinedFullPrompt);
-  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${Date.now()}&nologo=true`;
+  const randomSeed = Math.floor(Math.random() * 2000000000);
+  const imageUrl = `${POLLINATIONS_URL}/${encodedPrompt}?width=1024&height=1024&seed=${randomSeed}&nologo=true`;
 
   onProgress?.("جاري تحميل الصورة المعدلة...");
   return imageUrl;
